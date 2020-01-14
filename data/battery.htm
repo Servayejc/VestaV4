@@ -1,0 +1,213 @@
+﻿<!DOCTYPE html>
+<html>
+	<meta charset="UTF-8"> 
+	<style>
+		.c3 svg{font:10px sans-serif;-webkit-tap-highlight-color:transparent}.c3 line,.c3 path{fill:none;stroke:#000}.c3 text{-webkit-user-select:none;-moz-user-select:none;user-select:none}.c3-bars path,.c3-event-rect,.c3-legend-item-tile,.c3-xgrid-focus,.c3-ygrid{shape-rendering:crispEdges}.c3-chart-arc path{stroke:#fff}.c3-chart-arc text{fill:#fff;font-size:13px}.c3-grid line{stroke:#aaa}.c3-grid text{fill:#aaa}.c3-xgrid,.c3-ygrid{stroke-dasharray:3 3}.c3-text.c3-empty{fill:grey;font-size:2em}.c3-line{stroke-width:1px}.c3-circle._expanded_{stroke-width:1px;stroke:#fff}.c3-selected-circle{fill:#fff;stroke-width:2px}.c3-bar{stroke-width:0}.c3-bar._expanded_{fill-opacity:1;fill-opacity:.75}.c3-target.c3-focused{opacity:1}.c3-target.c3-focused path.c3-line,.c3-target.c3-focused path.c3-step{stroke-width:2px}.c3-target.c3-defocused{opacity:.3!important}.c3-region{fill:#4682b4;fill-opacity:.1}.c3-brush .extent{fill-opacity:.1}.c3-legend-item{font-size:12px}.c3-legend-item-hidden{opacity:.15}.c3-legend-background{opacity:.75;fill:#fff;stroke:#d3d3d3;stroke-width:1}.c3-title{font:14px sans-serif}.c3-tooltip-container{z-index:10}.c3-tooltip{border-collapse:collapse;border-spacing:0;background-color:#fff;empty-cells:show;-webkit-box-shadow:7px 7px 12px -9px #777;-moz-box-shadow:7px 7px 12px -9px #777;box-shadow:7px 7px 12px -9px #777;opacity:.9}.c3-tooltip tr{border:1px solid #ccc}.c3-tooltip th{background-color:#aaa;font-size:14px;padding:2px 5px;text-align:left;color:#fff}.c3-tooltip td{font-size:13px;padding:3px 6px;background-color:#fff;border-left:1px dotted #999}.c3-tooltip td>span{display:inline-block;width:10px;height:10px;margin-right:6px}.c3-tooltip td.value{text-align:right}.c3-area{stroke-width:0;opacity:.2}.c3-chart-arcs-title{dominant-baseline:middle;font-size:1.3em}.c3-chart-arcs .c3-chart-arcs-background{fill:#e0e0e0;stroke:none}.c3-chart-arcs .c3-chart-arcs-gauge-unit{fill:#000;font-size:16px}.c3-chart-arcs .c3-chart-arcs-gauge-max{fill:#777}.c3-chart-arcs .c3-chart-arcs-gauge-min{fill:#777}.c3-chart-arc .c3-gauge-value{fill:#000}.c3-chart-arc.c3-target g path{opacity:1}.c3-chart-arc.c3-target.c3-focused g path{opacity:1}
+		p {font:12px sans-serif;}
+		H3 {font:24px sans-serif;}
+}
+	</style>
+ 
+	<head>
+		<meta http-equiv= "Content-Type" content="text/html;charset=utf-8">
+		<link rel="icon" type="image/x-icon" href="images.jpg">
+    	<link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/master/jquery-ui.multidatespicker.css">
+		<link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/pepper-grinder/jquery-ui.css">
+		<script src="https://sdk.amazonaws.com/js/aws-sdk-2.187.0.min.js"></script>
+		<script src="https://code.jquery.com/jquery-2.2.4.js"integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="crossorigin="anonymous"></script>
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+		<script src="https://cdn.rawgit.com/dubrox/Multiple-Dates-Picker-for-jQuery-UI/master/jquery-ui.multidatespicker.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+
+ 		<script>
+			var f = d3.format(".2f");
+			var uri;
+			const options = {
+				method:'GET',
+				mode: 'cors'
+			}
+			
+			function pad(n, width, z) {
+				z = z || '0';
+				n = n + '';
+				return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+			}
+			
+			function localTime(x) {
+				d = new Date(x);
+				nd = new Date(d.getTime() - (d.getTimezoneOffset() * 60 * 1000));
+				return( nd.getFullYear()+'-'+pad(nd.getMonth()+1,2)+'-'+pad(nd.getDate(),2)+' '+pad(nd.getHours(),2)+':'+pad(nd.getMinutes(),2));
+			}
+			
+			if (!Date.prototype.toISOString) {
+				(function() {
+					Date.prototype.toISOString = function() {
+					return this.getUTCFullYear() +
+						'-' + pad(this.getUTCMonth() + 1,2) +
+						'-' + pad(this.getUTCDate(),2) +
+						'T' + pad(this.getUTCHours(),2) +
+						':' + pad(this.getUTCMinutes(),2) +
+						':' + pad(this.getUTCSeconds(),2) +
+						'.' + (this.getUTCMilliseconds() / 1000).toFixed(3).slice(2, 5) +
+						'Z';
+				};
+			  });
+			}
+
+			Date.prototype.addDays = function(days) {
+			  this.setDate(this.getDate() + parseInt(days));
+			  return this;
+			};
+
+			Date.prototype.addHours = function(hours) {
+			  this.setHours(this.getHours() - hours);
+			  return this;
+			};
+
+			function UTC(localDate){
+				d = new Date(localDate);
+				return(d.toISOString().substring(0,16));
+			};
+
+			window.onload=function(){
+			    // by default, show current day
+				nd = new Date();
+				fileName = pad(nd.getMonth()+1,2)+pad(nd.getDate(),2)+'.jsn';
+				var x = window.location.href;
+				var y = x.substr(0, x.lastIndexOf('/'));
+				
+				uri = y + '/getbatdata?FN=SOC_';
+				uri += pad(nd.getMonth()+1,2)+pad(nd.getDate(),2);
+				update();
+
+				$('#mdp').multiDatesPicker({
+					dateFormat: "yy-mm-dd",
+					maxPicks: 1,
+					maxDate: 0,
+					onClose: function() {
+						var dates = $("#mdp").multiDatesPicker('getDates');
+						if ((dates.length == 1)) {
+							uri = y + '/getlogdata?FN=SOC_';
+							uri+= dates[0].substring(5, 7);
+							uri+= dates[0].substring(8, 10);
+							update();
+						}
+					}
+				});
+			}
+			
+			
+			var chart;
+			
+			function update(){
+			  //  var quarter = document.getElementById('quarter').checked;
+			//	var farenheit = document.getElementById('CF').checked;
+				//alert(uri);
+				fetch(uri, options)
+				.then (function(resp){
+					if (!resp.ok) {
+						Alert ("Respone NOT ok");
+						throw Error(resp.statusText);
+					}
+					return resp.json().then(function(json){
+					if (json){ 
+					   
+						//alert(JSON.stringify(json));
+						data = json;
+						//data = {"Data":[{"UID":"2019-03-25T00:00:00","V":4.5,"SOC":89},{"UID":"2019-03-25T01:00:00","V":3.9,"SOC":55},{"UID":"2019-03-25T03:00:00","V":3.2,"SOC":28}]};
+						//alert (data);
+						dispData = data.Data;  //Items;
+										
+						//alert(JSON.stringify(dispData));
+						// generate chart
+						chart = c3.generate({
+							bindto: document.getElementById('chart'),
+							size: {
+								height: 600
+							},
+							padding: {
+								left: 100,
+								right: 100
+							},
+							data: {
+								xFormat: '%Y-%m-%dT%H:%M:%S',
+								json: dispData,
+								keys: {
+									x: 'UID',
+									value: ['V','SOC']
+								},
+								names: {
+									'V': 'Voltage',
+									'SOC': 'SOC'
+								},
+								axes: {
+									'SOC' : 'y',
+									'V' : 'y2'
+								},
+								type: 'spline'
+							},
+							
+							grid:{
+								x: { show: false},
+								y: { show: true} 	
+							},	
+						
+						axis : {
+							y2: {
+								max: 5,
+								min: 2,
+								show: true,
+								padding:{top: 0, bottom: 0 },
+								tick: {
+									format: function (d) { return d +"V"; }
+								}
+							},
+							y : {
+								max: 100,
+								min: 0,
+								padding:{top: 0, bottom: 0 },
+								tick: {
+								format: function (d) { 
+											return d +"%"; 	
+									}
+								}
+							},						  
+							x:{
+								type : "timeseries",
+									tick: {
+									format: function (x) {return(localTime(x));},
+									rotate: 60
+									}			
+								}
+							},
+						
+						tooltip:{
+							format: { 
+								value: function(value,ratio,id){if (id === 'SOC') {return  value +"%"}  else {return value +"V"};
+								}	
+							}							
+							
+						}
+						});  //generate
+					}	
+					});	// json  
+				})  
+				.catch(function(error) {
+				});
+			} 
+		</script>
+	</head>
+
+	<body>
+		<center><H3> Batteries </H3></center>
+ 		<p>Sélectionnez une ou deux dates: <input type="text"  width="150" id="mdp"> 
+			
+			<button type="button">Go!</button><br>
+		
+		</p>
+		<div id="chart"></div>
+		<div id="json"></div>
+	</body>	
+</html>

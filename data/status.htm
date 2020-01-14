@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8"> 
+<style>
+	html{
+		width:100%;
+		height:100%;
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 12px;
+	}
+	
+	body{
+		width:100%;
+		height:100%;
+	}
+	
+	div.zoom {
+		width: 370px;
+		position: static;
+		/*border: 1px solid blue;*/
+		transform-origin: 0% 0%;
+		transform: scale(2);
+		}	
+	
+    .fa.fafire{
+		letter-spacing: -1px;
+		font-size:16px;
+		color:red;
+	}
+	
+	.fa {
+		letter-spacing: -1px;
+		font-size:12px;
+	}
+	
+	.fa-fire{
+		color:orange;
+	}
+	
+	.fa-minus{
+		color:green;
+	}
+	
+	.fa-unlink{
+		color:red;
+	}
+	
+	.fa-battery-full, .fa-battery-three-quarters, .fa-battery-half{
+		color:green;
+	}
+
+	.fa-battery-quarter{
+		color:orange;
+	}
+	
+	.fa-battery-empty{
+		color:red;
+	}
+	
+	.tabulator{
+	    width:400px;
+	}
+
+	p.save{
+	    visibility:hidden;
+	}
+	.refresh{
+	    font-size:8px;
+		color:blue;
+	}
+	
+	.ete{
+	    font-size:8px;
+	}
+</style>
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.5.3/css/tabulator.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.0.0/css/tabulator.min.css" rel="stylesheet">
+	<script src="https://code.jquery.com/jquery-2.2.4.js"integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+ 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.0.0/js/tabulator.min.js"> </script>
+</head>
+
+<body>
+	<div class = "zoom">
+		<H2> Températures et régulation</H2>
+		<div id="time"></div>
+		<label for="ete" class="ete" >Heure d'été</label>
+		
+		
+		<div id="tb"></div>
+		<label for="refresh" onclick="handleRefresh(this);" class="refresh" >Rafraîchir</label>
+		<br>
+		<p class="save" id = "save">
+		Mot de passe:
+		<input type="password" id="Password" name="Password" size = 8><br>
+		<br>
+		<button id="save" type="button" onclick="SaveData()" >Sauvegarder</button><button id="cancel" type="button" onclick="Cancel()" >Annuler</button><br>
+		<br>
+		</p>
+	</div>
+	
+
+</body>
+
+<script>
+	tabledata=[{"_DSC":"Salon", "_T":21,"_C":1,"_SP":22,"_ST":1},{"_DSC":"Extérieur","_T":3.25},{"_DSC":"Salle de bain","_T":21,"_C":2,"_SP":21,"_ST":0},{"_DSC":"DDD","_T":18,"_C":3,"_SP":20,"_ST":0},{"_DSC":"EEE","_T":19,"_C":4,"_SP":21,"_ST":1}];
+
+	var refresh = false;	
+	var Edited = false;
+	var DST = true;
+	var uri = '';
+
+	const options = {
+		method:'GET'//,
+		//mode: 'cors'
+	}
+	
+	Date.prototype.stdTimezoneOffset = function () {
+		var jan = new Date(this.getFullYear(), 0, 1);
+		var jul = new Date(this.getFullYear(), 6, 1);
+		return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+	}
+
+	Date.prototype.isDstObserved = function () {
+		return this.getTimezoneOffset() < this.stdTimezoneOffset();
+	}
+	
+	var today = new Date();
+	var element = document.getElementsByClassName("ete")[0]; 
+	
+	DST = today.isDstObserved();
+	DST ? element.innerHTML = "Heure d'été" : element.innerHTML = "Heure d'hiver";
+
+    //alert(location.origin);
+	LoadData();
+
+function LoadData(){
+	var x = window.location.href;
+	var y = x.substr(0, x.lastIndexOf('/'));
+	url = y + '/getstatusdata?DST=';
+	url += DST;
+	fetch(url, options)
+	.then (function(resp){
+		if (!resp.ok) {
+			Alert ("Respone NOT ok");
+			throw Error(resp.statusText);
+		}
+		return resp.json().then(function(json){
+		if (json){ 
+			 
+			$("#tb").tabulator("setData", json.Sensors);
+			$("#tb").tabulator("redraw",true);
+			document.getElementById("time").innerHTML = json.Time;
+		}
+		});	
+	})
+	.catch(function(error) {
+	});
+}
+	
+function SaveData(){
+	var password = document.getElementById('Password').value;
+	Edited = false;
+	//document.getElementById("save").style.visibility='hidden';
+	data = $("#tb").tabulator("getData");
+	payload = '{"DST":';
+	payload += DST;
+	payload += ',"SetPoints":';
+	payload += JSON.stringify(data);
+	payload += '}';
+	//alert(payload);
+	var x = window.location.href;
+	var y = x.substr(0, x.lastIndexOf('/'));
+	url = y+'/savestatusdata?data=';
+	url += payload;
+	url += '&pass='
+	url += btoa(password); 
+	
+	fetch(url)
+	.then (function(resp){
+		
+		if (!resp.ok) {
+			alert ("Respone NOT ok");
+			throw Error(resp.statusText);
+		}
+		return resp.text()
+		.then(function(text) {
+			if (text){
+				//alert(text);
+				Edited = false;
+			}
+		});	
+	})
+	.catch(function(error) {
+		alert(error);		
+	});			
+}	
+
+$("#tb").tabulator({
+	fitColumns:true,
+	columns:[{title:"",field:"_DSC",width: 100, headerSort:false},
+			{title:"Canal",field:"_C",width: 60, headerSort:false},
+			{title:"Voulue",field:"_SP",editor:"input",width: 60, headerSort:false},
+			{title: "V",field:"_V",width:60, headerSort:false, visible :false},
+			{title: "S",field:"_S",width:60, headerSort:false, visible :false},
+			{title: "Réelle",field:"_T",width:60, headerSort:false},
+			{title:"État",field:"_ST",width: 120, headerSort:false, formatter:function(cell, formatterParams, onRendered){
+				var row = cell.getRow();
+				var V = row.getData()._V;
+				var SOC = row.getData()._S; 
+				var Info = '&nbsp;&nbsp;' + V.toFixed(2) + 'V - '+SOC.toFixed(1)+'%';				
+				
+				switch(cell.getValue()) {
+					case 0 : return "<i class='fa fa-minus'><i class='fa fa-minus'><i class='fa fa-minus'></i>";  break;
+					case 1 : return "<i class='fa fa-fire' ><i class='fa fa-fire' ><i class='fa fa-fire' ></i>"; break;
+					case 2 : return "<i class='fa fa-unlink'><i class='fa fa-unlink'><i class='fa fa-unlink'></i>"; break;
+					case 3 : return "<i class='fa fa-battery-full'>" + Info + "</i>"; break;
+					case 4 : return "<i class='fa fa-battery-three-quarters'>" + Info + "</i>"; break;
+					case 5 : return "<i class='fa fa-battery-half'>" + Info +  "</i>"; break;
+					case 6 : return "<i class='fa fa-battery-quarter'>" + Info +  "</i>"; break;
+					case 7 : return "<i class='fa fa-battery-empty'>" + Info +  "</i>"; break;
+				} 
+			}},
+			],
+			 cellEdited:function(cell){
+				document.getElementById("save").style.visibility='visible';
+				Edited=true;
+				refresh=false;
+				clearInterval(T);
+				document.getElementsByClassName("refresh")[0].innerHTML = "Rafraîchir"; 
+			},
+});
+
+function Cancel() {
+	document.getElementById("save").style.visibility='hidden';
+	Edited=false;
+	refresh=false;
+	clearInterval(T);
+	document.getElementsByClassName("refresh")[0].innerHTML = "Rafraîchir"; 
+	LoadData();
+} 
+
+function handleRefresh(element){ 
+
+  if (refresh == true) {
+    refresh = false;
+	clearInterval(T);
+	element.innerHTML = "Rafraîchir"; 
+  } 
+  else
+  { 
+    T = setInterval(LoadData,1000);
+	refresh = true;
+    element.innerHTML = "Ne plus rafraîchir"; 
+  }	
+}
+
+// test
+//$("#tb").tabulator("setData", tabledata);
+
+</script></html>

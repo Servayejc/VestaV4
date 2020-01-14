@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+	  <meta charset="UTF-8"> 
+<style>
+	html{
+		width:100%;
+		height:100%;
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 12px;
+	}
+	
+	body{
+		width:100%;
+		height:100%;
+	}
+	
+	div.zoom {
+		width: 370px;
+		position: static;
+		/*border: 1px solid blue;*/
+		transform-origin: 0% 0%;
+		transform: scale(2);
+		}	
+	
+    .fa.fafire{
+		letter-spacing: -1px;
+		font-size:16px;
+		color:red;
+	}
+	
+	.fa {
+		letter-spacing: -1px;
+		font-size:12px;
+	}
+	
+	.fa-fire{
+		color:red;
+	}
+	
+	.fa-minus{
+		color:green;
+	}
+	
+	.tabulator{width:170px;}
+	
+
+	
+	/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+   margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Cancel Button */
+ .btncancel {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+ .btncancel:hover,
+ .btncancel:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+ 
+/* The Ok Button */
+ .btnok {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+ .btnok:over,
+ .btnok:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+	
+	p.save{
+	    visibility:visible;
+	} 
+
+
+}
+</style>
+<head>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.5.3/css/tabulator.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-2.2.4.js"integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.0.0/css/tabulator.min.css" rel="stylesheet">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.0.0/js/tabulator.min.js"></script>
+</head>
+
+<body >
+	
+	
+	<div class = "zoom">
+	<p class="arial">
+	
+	<select  id = "Channel", onchange="LoadData()">
+		<option value="0">Salon</option>
+		<option value="1">Sdb 1</option>
+		<option value="2">Sdb 2</option>
+		<option value="3">Chambres</option>
+		<option value="4">Chambre s/s</option>
+		<option value="5">Sous-Sol</option>
+	</select> 
+	<select id = "Day", onchange="LoadData()">
+		<option value="0">Dimanche</option>
+		<option value="1">Lundi</option>
+		<option value="2">Mardi</option>
+		<option value="3">Mercredi</option>
+		<option value="4">Jeudi</option>
+		<option value="5">Vendredi</option>
+		<option value="6">Samedi</option>
+	</select> 
+	
+	<div id="tb"></div></p>
+	<p class="arial">
+	Appliquer sur les jours suivants:
+	<br>	
+	<input type="radio" name="rb1" id="rb" value="127">Tous
+	<br>
+	<input type="radio" name="rb1" id="rb" value="62">Lundi au vendredi
+	<br>
+	<input type="radio" name="rb1" id="rb" value="65">Samedi et dimanche
+	<br>
+	<input type="radio" name="rb1" id="rb" value="0" checked=true>Jour courant
+	</p>
+	<p class="save" id = "save">
+		Mot de passe:
+		<input type="password" id="Password" name="Password" size = 8><br>
+		<button id="save" type="button" onclick="SaveData()" >Sauvegarder</button><button id="cancel" type="button" onclick="Cancel()" >Annuler</button><br>
+	</p>
+	</p>
+</div>
+
+<script src = "http://cdn.jsdelivr.net/g/filesaver.js"></script>
+<script>
+  function SaveAsFile(t,f,m){
+	try {
+		var b = new Blob([t],{type:m});
+		saveAs(b,f);
+		} catch(e) 
+		{
+			window.open("data:"+m+","+encodeURIComponent(t),'_blank','');
+		}
+  
+  }
+  
+  SaveAsFile("text","filemame.txt","text/plain;charset=utf-8");
+</script>
+
+</body>
+
+
+</html>
