@@ -2,7 +2,7 @@
 
 
 - Mesure de températures avec sondes DS18B20
-- Supporte des mesure déportées sur des modules alimentés par batterie
+- Supporte des mesures déportées sur des modules alimentés par batterie
 - Régule la température sur 6 canaux via une interface I2C
 - Chaque canal permet 8 points de contrôle par jour de la semaine
 - Les mesures sont enregistrées toutes les 15 minutes sur une carte SD
